@@ -5,8 +5,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 import streamlit as st
 
-# Veriyi yükleme
-file_path = 'employeePromotion.csv'  # CSV dosyasının doğru yolunu belirtin
+# Başlık ve stil ayarları
+st.set_page_config(page_title="Employee Promotion Prediction App", layout="wide")
+st.title("📈 Employee Promotion Prediction App")
+
+# Veri Yükleme ve Hazırlama
+file_path = 'employeePromotion.csv'
 data = pd.read_csv(file_path)
 
 # Kategorik değişkenleri dönüştürme ve eksik değerleri doldurma
@@ -29,22 +33,24 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
-# Streamlit uygulaması
-st.title("Çalışan Terfi Tahmin Uygulaması")
+# Yan Menü
+with st.sidebar:
+    st.header("🌟 Input Employee Data")
+    department = st.selectbox("Department", label_encoders['department'].classes_)
+    region = st.selectbox("Region", label_encoders['region'].classes_)
+    education = st.selectbox("Education Level", label_encoders['education'].classes_)
+    gender = st.selectbox("Gender", label_encoders['gender'].classes_)
+    recruitment_channel = st.selectbox("Recruitment Channel", label_encoders['recruitment_channel'].classes_)
+    no_of_trainings = st.number_input("Number of Trainings", min_value=1, max_value=10, value=1, step=1)
+    age = st.number_input("Age", min_value=18, max_value=60, value=30, step=1)
+    previous_year_rating = st.number_input("Previous Year Rating", min_value=1.0, max_value=5.0, value=3.0, step=0.1)
+    length_of_service = st.number_input("Length of Service (Years)", min_value=1, max_value=40, value=5, step=1)
+    kpi_met = st.selectbox("KPI Met >80%", [0, 1])
+    awards_won = st.selectbox("Awards Won", [0, 1])
+    avg_training_score = st.number_input("Average Training Score", min_value=0, max_value=100, value=50, step=1)
 
-# Kullanıcı girdileri
-department = st.selectbox("Departman", label_encoders['department'].classes_)
-region = st.selectbox("Bölge", label_encoders['region'].classes_)
-education = st.selectbox("Eğitim Durumu", label_encoders['education'].classes_)
-gender = st.selectbox("Cinsiyet", label_encoders['gender'].classes_)
-recruitment_channel = st.selectbox("İşe Alım Kanalı", label_encoders['recruitment_channel'].classes_)
-no_of_trainings = st.number_input("Eğitim Sayısı", min_value=1, max_value=10, value=1, step=1)
-age = st.number_input("Yaş", min_value=18, max_value=60, value=30, step=1)
-previous_year_rating = st.number_input("Önceki Yıl Performans Notu", min_value=1.0, max_value=5.0, value=3.0, step=0.1)
-length_of_service = st.number_input("Hizmet Süresi (Yıl)", min_value=1, max_value=40, value=5, step=1)
-kpi_met = st.selectbox("KPI >80% Karşılandı mı?", [0, 1])
-awards_won = st.selectbox("Ödül Kazandı mı?", [0, 1])
-avg_training_score = st.number_input("Ortalama Eğitim Skoru", min_value=0, max_value=100, value=50, step=1)
+# Ana Sayfa
+st.header("📊 Prediction Results")
 
 # Girdileri dönüştürme
 encoded_inputs = [
@@ -62,8 +68,8 @@ encoded_inputs = [
     avg_training_score
 ]
 
-# Tahmin yapma
-if st.button("Terfi Durumunu Tahmin Et"):
+# Tahmin Butonu ve Sonuç Gösterimi
+if st.button("🔍 Predict Promotion"):
     prediction = model.predict([encoded_inputs])
-    result = "Terfi Edildi" if prediction[0] == 1 else "Terfi Edilmedi"
-    st.write("Tahmin Sonucu:", result)
+    result = "🎉 Promoted" if prediction[0] == 1 else "🚫 Not Promoted"
+    st.markdown(f"<h2 style='color: green;'>{result}</h2>", unsafe_allow_html=True)
